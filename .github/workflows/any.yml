@@ -1,0 +1,23 @@
+name: 'push'
+
+on:
+  - push
+
+jobs:
+  build_and_test:
+    name: Build and run Tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install environment
+        run: make bootstrap dev.build
+
+      - name: Run Tests
+        run: make test
+
