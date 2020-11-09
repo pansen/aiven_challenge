@@ -38,16 +38,20 @@ dev.update:
 black:
 	$(BLACK) pansen
 
+.PHONY: flakehell
+flakehell:
+	.venv/bin/flakehell lint pansen
+
 .PHONY: black.check
 black.check:
 	$(BLACK) --check pansen
 
 .PHONY: test
-test: black
+test: black flakehell
 	.venv/bin/pytest pansen
 
 .PHONY: ci.test
-ci.test: black.check
+ci.test: black.check flakehell
 	.venv/bin/pytest pansen
 
 

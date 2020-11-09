@@ -46,11 +46,11 @@ httpx = "*"
 
 [tool.poetry.dev-dependencies]
 nox = "^2020.8.22"
-black = "^20.8b1"
-flake8 = "^3.8.3"
-flake8-black = "^0.2.1"
-flake8-bugbear = "^20.1.4"
-flake8-bandit = "^2.1.2"
+black = "*"
+flakehell = "*"
+flake8 = "*"
+flake8-bugbear = "*"
+flake8-bandit = "*"
 pytest = "^6.0.2"
 mypy = "^0.760"
 vcrpy = "*"
@@ -58,6 +58,34 @@ vcrpy = "*"
 
 [tool.poetry.scripts]
 pansen_aiven = 'pansen.aiven.main:run'
+
+
+[tool.flakehell]
+exclude = [
+    "README.md"
+]
+format = "colored"
+max_line_length = 120
+show_source = true
+
+[tool.flakehell.plugins]
+# TODO andi: don't know how to globally disable `W503`. This is rather useless,
+#  as `black`, which runs before the tests, formats to be invalid for `flake8`.
+#"flake8*" = ["-W503"]
+flake8-bandit = ["+*", "-S322"]
+flake8-bugbear = ["+*"]
+flake8-builtins = ["+*"]
+flake8-comprehensions = ["+*"]
+flake8-darglint = ["+*"]
+flake8-eradicate = ["+*"]
+flake8-isort = ["+*"]
+flake8-mutable = ["+*"]
+flake8-pytest-style = ["+*"]
+mccabe = ["+*"]
+pep8-naming = ["+*"]
+pycodestyle = ["+*"]
+pyflakes = ["+*"]
+pylint = ["+*"]
 
 
 [build-system]

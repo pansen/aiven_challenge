@@ -1,12 +1,10 @@
 import logging
 from datetime import datetime
 
-from aiohttp.hdrs import METH_GET, METH_POST
 from fastapi import FastAPI
 from starlette.requests import Request
 
 from pansen.aiven.config import configure, log_config
-from pansen.aiven.lib.fastapi import as_starlette_response
 
 app = FastAPI()
 log = logging.getLogger(__name__)
@@ -20,8 +18,8 @@ async def align_possible_testclient(request: Request, call_next):
     """
     if (
         not request.scope.get("raw_path", None)
-        and request.headers.get("user-agent", None) == "testclient"
-        and request.scope["path"] not in [r.path for r in request.app.router.routes]
+        and request.headers.get("user-agent", None) == "testclient"  # noqa: W503
+        and request.scope["path"] not in [r.path for r in request.app.router.routes]  # noqa: W503
     ):
         # this will become the `full_path` parameter later
         request.scope["path"] = (
