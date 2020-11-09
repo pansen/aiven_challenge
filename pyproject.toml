@@ -28,11 +28,12 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8.6"
-bcrypt = "*"
-fastapi = "*"
-uvicorn = "*"
-passlib = "*"
+
 python-dotenv = "*"
+pyyaml = "*"
+marshmallow = "*"
+dacite = "*"
+ujson = "*"
 
 aiokafka = "*"
 msgpack = "*"

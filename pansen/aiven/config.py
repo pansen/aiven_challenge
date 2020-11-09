@@ -1,21 +1,19 @@
 import os
 from dataclasses import dataclass
-from datetime import datetime
 from logging.config import dictConfig
 
-from aiohttp.hdrs import METH_GET, METH_POST
 from dotenv import load_dotenv
-from fastapi import FastAPI
+
+from pansen.aiven import PANSEN_AIVEN_PROJECT_ROOT
 
 
 @dataclass
 class Config:
     KAFKA_SERVER: str
-    HTTP_HOST: str
-    HTTP_PORT: int
+    URL_CONFIG_FILE: str
 
 
-def configure(app: FastAPI) -> Config:
+def configure() -> Config:
     """
     Parse the ENV and prepare a `Config` instance according to that.
     """
@@ -23,25 +21,19 @@ def configure(app: FastAPI) -> Config:
 
     dictConfig(log_config())
 
-    # int
-    for k in ("HTTP_PORT",):
-        locals()[k] = int(os.getenv(k))
+    # path
+    for k in ("URL_CONFIG_FILE",):
+        locals()[k] = os.path.join(PANSEN_AIVEN_PROJECT_ROOT, os.getenv(k))
+
     # string
-    for k in (
-        "KAFKA_SERVER",
-        "HTTP_HOST",
-    ):
+    for k in ("KAFKA_SERVER",):
         locals()[k] = os.getenv(k)
     # Take all local variables to the `Config` constructor, if they start uppercase
     c = Config(**{key: value for (key, value) in locals().items() if key.isupper()})
 
-    app.extra["config"] = c
-    app.extra["started_at"] = datetime.utcnow()
-    app.extra["counters"] = {
-        METH_POST: 0,
-        METH_GET: 0,
-    }
+    import logging
 
+    logging.getLogger(__name__).debug("Config: %s", c)
     return c
 
 
@@ -63,7 +55,7 @@ def log_config():
             },
         },
         "root": {
-            "level": "INFO",
+            "level": "DEBUG",
             "handlers": ["console"],
         },
     }

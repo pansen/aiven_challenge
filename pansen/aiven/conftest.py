@@ -7,11 +7,9 @@ from asyncio.selector_events import BaseSelectorEventLoop
 import msgpack
 import pytest
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
-from starlette.testclient import TestClient
 from vcr import VCR
 
 from pansen.aiven.config import Config, configure
-from pansen.aiven.main import app
 
 log = logging.getLogger(__name__)
 
@@ -22,13 +20,7 @@ KAFKA_PARTITION = 0
 
 @pytest.fixture(scope="function")
 def config() -> Config:
-    return configure(app)
-
-
-@pytest.fixture(scope="function")
-def test_client(config) -> TestClient:
-    c = TestClient(app)
-    return c
+    return configure()
 
 
 @pytest.fixture(scope="function")
@@ -41,18 +33,13 @@ async def asyncio_kafka_producer(config: Config, event_loop: BaseSelectorEventLo
     )
     # Get cluster layout and initial topic/partition leadership information
     await producer.start()
-    await wait_topic(producer.client, KAFKA_TEST_TOPIC)
+    await _wait_topic(producer.client, KAFKA_TEST_TOPIC)
 
     try:
         yield producer
     finally:
         # Wait for all pending messages to be delivered or expire.
         await producer.stop()
-
-
-def _unpack(v):
-    log.debug("Try unpacking: %s ...", v)
-    return msgpack.unpackb(v)
 
 
 @pytest.fixture(scope="function")
@@ -92,7 +79,12 @@ cast_vcr = VCR(
 )
 
 
-async def wait_topic(client, topic):
+def _unpack(v):
+    log.debug("Try unpacking: %s ...", v)
+    return msgpack.unpackb(v)
+
+
+async def _wait_topic(client, topic):
     """
     Stolen from
     https://github.com/aio-libs/aiokafka/blob/f7f55b19b43b084edc844c3531a570d233d37912/tests/_testutil.py#L347-L357
