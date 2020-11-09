@@ -18,6 +18,9 @@ jobs:
       - name: Install environment
         run: make bootstrap dev.build
 
+      - name: Start Docker containers for Zookeeper, Kafka 
+        run: docker-compose up -d
+
       - name: Run Tests
         run: make test
 
