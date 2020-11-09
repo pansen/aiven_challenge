@@ -1,7 +1,10 @@
+import asyncio
 import os
 from dataclasses import dataclass
 from logging.config import dictConfig
 
+import msgpack
+from aiokafka import AIOKafkaProducer
 from dotenv import load_dotenv
 
 from pansen.aiven import PANSEN_AIVEN_PROJECT_ROOT
@@ -10,7 +13,20 @@ from pansen.aiven import PANSEN_AIVEN_PROJECT_ROOT
 @dataclass
 class Config:
     KAFKA_SERVER: str
+    KAFKA_TOPIC: str
     URL_CONFIG_FILE: str
+
+    async def get_kafka_producer(self, event_loop=None) -> AIOKafkaProducer:
+        # https://github.com/aio-libs/aiokafka#aiokafkaproducer
+        producer = AIOKafkaProducer(
+            loop=event_loop and event_loop or asyncio.get_event_loop(),
+            bootstrap_servers=self.KAFKA_SERVER,
+            enable_idempotence=True,
+            value_serializer=lambda v: msgpack.packb(v),
+        )
+        # Get cluster layout and initial topic/partition leadership information
+        await producer.start()
+        return producer
 
 
 def configure() -> Config:
@@ -26,7 +42,10 @@ def configure() -> Config:
         locals()[k] = os.path.join(PANSEN_AIVEN_PROJECT_ROOT, os.getenv(k))
 
     # string
-    for k in ("KAFKA_SERVER",):
+    for k in (
+        "KAFKA_SERVER",
+        "KAFKA_TOPIC",
+    ):
         locals()[k] = os.getenv(k)
     # Take all local variables to the `Config` constructor, if they start uppercase
     c = Config(**{key: value for (key, value) in locals().items() if key.isupper()})

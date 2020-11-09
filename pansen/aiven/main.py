@@ -1,28 +1,26 @@
 import asyncio
 import logging
 
-import msgpack
-from aiokafka import AIOKafkaProducer
-
 from pansen.aiven.config import configure
 from pansen.aiven.lib.http import batch_fetch
 from pansen.aiven.lib.schedule import Schedule
+from pansen.aiven.lib.transport import MonitorUrlMetrics
 
 log = logging.getLogger(__name__)
 
 
 async def runner(schedule):
-    producer = AIOKafkaProducer(
-        loop=asyncio.get_event_loop(),
-        bootstrap_servers=schedule.config.KAFKA_SERVER,
-        enable_idempotence=True,
-        value_serializer=lambda v: msgpack.packb(v),
-    )
-    # Get cluster layout and initial topic/partition leadership information
-    await producer.start()
+    _producer = await schedule.config.get_kafka_producer()  # noqa F841
 
-    async for jobs in batch_fetch(schedule):
-        pass
+    try:
+        async for jobs in batch_fetch(schedule):
+            sends = []
+            for response in jobs:
+                mu_metric = MonitorUrlMetrics.from_respose(response)
+                sends.append(_producer.send(schedule.config.KAFKA_TOPIC, mu_metric.__dict__))
+            await asyncio.gather(*sends)
+    finally:
+        await _producer.stop()
 
 
 def run():
