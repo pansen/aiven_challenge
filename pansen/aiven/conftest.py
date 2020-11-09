@@ -26,14 +26,7 @@ def config() -> Config:
 
 @pytest.fixture(scope="function")
 async def asyncio_kafka_producer(config: Config, event_loop: BaseSelectorEventLoop) -> AIOKafkaProducer:
-    producer = AIOKafkaProducer(
-        loop=event_loop,
-        bootstrap_servers=config.KAFKA_SERVER,
-        enable_idempotence=True,
-        value_serializer=lambda v: msgpack.packb(v),
-    )
-    # Get cluster layout and initial topic/partition leadership information
-    await producer.start()
+    producer = await config.get_kafka_producer(event_loop)
     await _wait_topic(producer.client, KAFKA_TEST_TOPIC)
 
     try:
