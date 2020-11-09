@@ -5,6 +5,9 @@ export POETRY_VIRTUALENVS_IN_PROJECT=true
 
 PYTHON_GLOBAL := $(shell /usr/bin/which python3.8)
 POETRY := $(PYTHON_GLOBAL) -m poetry
+BLACK := .venv/bin/black \
+		--line-length 120 \
+		--target-version py38
 
 .DEFAULT_GOAL := dev.build
 
@@ -33,13 +36,18 @@ dev.update:
 
 .PHONY: black
 black:
-	.venv/bin/black \
-		--line-length 120 \
-		--target-version py38 \
-		pansen
+	$(BLACK) pansen
+
+.PHONY: black.check
+black.check:
+	$(BLACK) --check pansen
 
 .PHONY: test
 test: black
+	.venv/bin/pytest pansen
+
+.PHONY: ci.test
+ci.test: black.check
 	.venv/bin/pytest pansen
 
 
