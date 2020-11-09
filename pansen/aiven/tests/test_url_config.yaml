@@ -1,0 +1,8 @@
+---
+schedule:
+  - url: 'http://httpbin.org/post?a=1'
+    method: 'POST'
+    body: {}
+    headers:
+      x-extra-header: '1'
+  - url: 'http://httpbin.org/get?a=1'
