@@ -89,6 +89,10 @@ pycodestyle = ["+*"]
 pyflakes = ["+*"]
 pylint = ["+*"]
 
+[tool.flakehell.exceptions."**/test*.py"]
+# Don't be picky in tests
+"flake8*" = ["-*"]
+
 
 [build-system]
 requires = ["poetry>=0.12", "setuptools", "wheel"]
