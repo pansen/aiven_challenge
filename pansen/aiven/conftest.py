@@ -1,7 +1,9 @@
 import inspect
 import os
+from asyncio.selector_events import BaseSelectorEventLoop
 
 import pytest
+from aiokafka import AIOKafkaProducer
 from starlette.testclient import TestClient
 from vcr import VCR
 
@@ -18,6 +20,18 @@ def config() -> Config:
 def test_client(config) -> TestClient:
     c = TestClient(app)
     return c
+
+
+@pytest.fixture(scope="function")
+async def asyncio_kafka_producer(config: Config, event_loop: BaseSelectorEventLoop) -> AIOKafkaProducer:
+    producer = AIOKafkaProducer(loop=event_loop, bootstrap_servers=config.KAFKA_SERVER, enable_idempotence=True)
+    # Get cluster layout and initial topic/partition leadership information
+    await producer.start()
+    try:
+        yield producer
+    finally:
+        # Wait for all pending messages to be delivered or expire.
+        await producer.stop()
 
 
 def _build_vcr_cassette_yaml_path_from_func_using_module(function):

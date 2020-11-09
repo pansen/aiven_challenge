@@ -33,6 +33,7 @@ fastapi = "*"
 uvicorn = "*"
 passlib = "*"
 python-dotenv = "*"
+aiokafka = "*"
 
 # http client stuff
 requests = "*"
@@ -52,6 +53,7 @@ flake8 = "*"
 flake8-bugbear = "*"
 flake8-bandit = "*"
 pytest = "^6.0.2"
+pytest-asyncio = "*"
 mypy = "^0.760"
 vcrpy = "*"
 

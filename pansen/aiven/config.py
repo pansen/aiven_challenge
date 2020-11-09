@@ -10,6 +10,7 @@ from fastapi import FastAPI
 
 @dataclass
 class Config:
+    KAFKA_SERVER: str
     HTTP_HOST: str
     HTTP_PORT: int
 
@@ -26,7 +27,10 @@ def configure(app: FastAPI) -> Config:
     for k in ("HTTP_PORT",):
         locals()[k] = int(os.getenv(k))
     # string
-    for k in ("HTTP_HOST",):
+    for k in (
+        "KAFKA_SERVER",
+        "HTTP_HOST",
+    ):
         locals()[k] = os.getenv(k)
     # Take all local variables to the `Config` constructor, if they start uppercase
     c = Config(**{key: value for (key, value) in locals().items() if key.isupper()})
