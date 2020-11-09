@@ -1,37 +1,65 @@
-Aiven homework
-==============
+# Aiven Homework
 
-This is a coding assignment for a backend developer position at Aiven.
+## Abstract
 
-The exercise should be relatively fast to complete. You can spend as
-much time as you want to. If all this is very routine stuff for you,
-this should not take more than a few hours. If there are many new
-things, a few evenings should already be enough time.
+This repository tries to cover the challenge as good as possible. Since this is a coding challenge, 
+there are some limitations, some of them are marked as `TODO` in the code. 
 
-We select the candidates for the interview based on the homework, so
-please pay attention that your solution demonstrates your skills in
-developing production quality code.
+## Usage
 
-If you run out of time, please return a partial solution, and describe
-in your reply how you would continue having more time.
+This repository is intented to be used locally for execution or development. 
 
-Please use Python for the exercise, otherwise, you have the freedom to
-select suitable tools and libraries (with a few exceptions listed
-below).
+### Local Execution 
 
-Be prepared to defend your solution in the possible interview later.
+#### Prerequisites
 
-To return your homework, store the code and related documentation on
-GitHub for easy access. Please send following information via email:
+- You need to have UNIX compatible OS
+- You need Docker installed
+- You need `docker-compose` installed
+   
+#### Execute
 
--   link to the GitHub repository
--   if you ran out of time and you are returning a partial solution,
-    description of what is missing and how you would continue
+To just run the current version, use 
 
-Your code will only be used for the evaluation.
+```bash
+docker-compose up --build
+```
 
-Exercise
-========
+
+### Local Development
+
+#### Prerequisites
+
+- You need to have UNIX compatible OS
+- You need to have `make` and *Python3.8* installed
+- Probably you also need a C compiler toolchain (not sure about the dependencies)
+- It is assumed you have a Python IDE installed, particulary *PyCharm*
+- After checkout, run `make bootstrap dev.build` *before* opening the project in PyCharm. 
+  This ensures to let PyCharm find the `venv` and its containing local Python interpreter.
+- After opening the project in PyCharm, ensure the projects test-runner is configured to use 
+  `pytest`
+  
+  ![PyCharm Testrunner Configuration](doc/img/PyCharm_Testrunner.jpg)
+
+#### Execute
+
+To build your development environment, use
+
+```bash
+make dev.build
+```
+
+To run all tests, use
+
+```bash
+make test
+```
+
+Once you followed the prerequisites section, you will also be able to run and debug single tests 
+from PyCharm. 
+
+
+## Exercise
 
 Your task is to implement a system that monitors website availability
 over the network, produces metrics about this and passes these events
@@ -73,8 +101,7 @@ The solution should NOT include using any of the following:
 -   Extensive container build recipes - rather focus your effort on the
     Python code, tests, documentation, etc.
 
-Criteria for evaluation
-=======================
+### Criteria for evaluation
 
 -   Code formatting and clarity. We value readable code written for
     other developers, not for a tutorial, or as one-off hack.
