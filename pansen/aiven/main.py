@@ -13,13 +13,12 @@ async def _run(schedule: Schedule):
     """
     Entry-point to have the ability to perform some application start logic.
     """
-    jobs = []
-    async with httpx.AsyncClient() as client:
-        for job in schedule.get_jobs():
-            jobs.append(job.fetch(client))
-        # TODO andi: why this results in `TypeError: unhashable type: 'list'`
-        return await asyncio.gather(*jobs)
-        # return jobs
+    for _schedule in schedule:
+        jobs = []
+        async with httpx.AsyncClient() as client:
+            for job in schedule.get_jobs():
+                jobs.append(job.fetch(client))
+            yield await asyncio.gather(*jobs)
 
 
 def run():

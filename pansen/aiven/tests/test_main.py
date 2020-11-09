@@ -7,6 +7,6 @@ from pansen.aiven.main import _run
 
 @pytest.mark.asyncio
 async def test_run(config):
-    res = await _run(Schedule(config))
-    assert 2 == len(res)
-    assert all(isinstance(r, Response) for r in res)
+    async for res in _run(Schedule(config, max_count=1)):
+        assert 2 == len(res)
+        assert all(isinstance(r, Response) for r in res)

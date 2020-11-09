@@ -24,8 +24,19 @@ class Schedule:
     filters URL check configurations and selectively creates `MonitorUrlJob`s.
     """
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, max_count=None):
         self.config = config
+        self.max_count = max_count
+
+    def __iter__(self):
+        self._count = 0
+        return self
+
+    def __next__(self):
+        self._count = self._count + 1
+        if self.max_count == 0 or (self.max_count and self._count > self.max_count):
+            raise StopIteration
+        return self
 
     def get_jobs(self) -> List[MonitorUrlJob]:
         return ScheduleSchema().load(self._parse_config())["schedule"]
