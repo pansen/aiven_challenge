@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import List, Optional
+import logging
+from typing import List
 
 import yaml
 from aiohttp.hdrs import METH_DELETE, METH_GET, METH_HEAD, METH_PATCH, METH_POST, METH_PUT
@@ -9,18 +9,9 @@ from marshmallow.validate import ContainsNoneOf
 
 from pansen.aiven.config import Config
 from pansen.aiven.lib import UjsonSchema
+from pansen.aiven.lib.http import MonitorUrlJob
 
-
-@dataclass(frozen=True)
-class MonitorUrlJob:
-    """
-    Entity to represent a URL check configuration.
-    """
-
-    method: str
-    url: str
-    headers: Optional[dict]
-    body: Optional[dict]
+log = logging.getLogger(__name__)
 
 
 class Schedule:

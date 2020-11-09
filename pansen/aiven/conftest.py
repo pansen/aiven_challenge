@@ -20,6 +20,7 @@ KAFKA_PARTITION = 0
 
 @pytest.fixture(scope="function")
 def config() -> Config:
+    os.environ["URL_CONFIG_FILE"] = "./pansen/aiven/tests/test_url_config.yaml"
     return configure()
 
 
