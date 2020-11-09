@@ -1,0 +1,8 @@
+*
+!Makefile
+!.env.example
+!poetry.lock
+!pyproject.toml
+!pansen
+!setup.py
+!README.md
