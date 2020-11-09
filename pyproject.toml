@@ -33,7 +33,9 @@ fastapi = "*"
 uvicorn = "*"
 passlib = "*"
 python-dotenv = "*"
+
 aiokafka = "*"
+msgpack = "*"
 
 # http client stuff
 requests = "*"
