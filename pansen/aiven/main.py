@@ -1,32 +1,34 @@
 import asyncio
 import logging
 
-import httpx
+import msgpack
+from aiokafka import AIOKafkaProducer
 
 from pansen.aiven.config import configure
+from pansen.aiven.lib.http import batch_fetch
 from pansen.aiven.lib.schedule import Schedule
 
 log = logging.getLogger(__name__)
 
 
-async def _run(schedule: Schedule):
-    """
-    Entry-point to have the ability to perform some application start logic.
-    """
-    for _schedule in schedule:
-        jobs = []
-        async with httpx.AsyncClient() as client:
-            for job in schedule.get_jobs():
-                jobs.append(job.fetch(client))
-            yield await asyncio.gather(*jobs)
-
-
 async def runner(schedule):
-    async for jobs in _run(schedule):
+    producer = AIOKafkaProducer(
+        loop=asyncio.get_event_loop(),
+        bootstrap_servers=schedule.config.KAFKA_SERVER,
+        enable_idempotence=True,
+        value_serializer=lambda v: msgpack.packb(v),
+    )
+    # Get cluster layout and initial topic/partition leadership information
+    await producer.start()
+
+    async for jobs in batch_fetch(schedule):
         pass
 
 
 def run():
+    """
+    Entry-point to have the ability to perform some application start logic.
+    """
     c = configure()
     schedule = Schedule(c, max_count=2)
     asyncio.run(runner(schedule))
