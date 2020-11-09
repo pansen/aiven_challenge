@@ -21,7 +21,12 @@ async def _run(schedule: Schedule):
             yield await asyncio.gather(*jobs)
 
 
+async def runner(schedule):
+    async for jobs in _run(schedule):
+        pass
+
+
 def run():
     c = configure()
-    schedule = Schedule(c)
-    asyncio.run(_run(schedule))
+    schedule = Schedule(c, max_count=2)
+    asyncio.run(runner(schedule))

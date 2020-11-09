@@ -24,9 +24,10 @@ class Schedule:
     filters URL check configurations and selectively creates `MonitorUrlJob`s.
     """
 
-    def __init__(self, config: Config, max_count=None):
+    def __init__(self, config: Config, max_count=None, wait_between=None):
         self.config = config
         self.max_count = max_count
+        self.wait_between = wait_between
 
     def __iter__(self):
         self._count = 0
@@ -36,6 +37,7 @@ class Schedule:
         self._count = self._count + 1
         if self.max_count == 0 or (self.max_count and self._count > self.max_count):
             raise StopIteration
+        # TODO andi: add optional wait here, if `self.wait_between` is set
         return self
 
     def get_jobs(self) -> List[MonitorUrlJob]:
