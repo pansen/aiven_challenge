@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pansen"
+name = "pansen_aiven"
 version = "0.0.1"
 description = "Aiven coding challenge"
 authors = [
@@ -8,6 +8,10 @@ authors = [
 license = "MIT"
 readme = "README.md"
 include = []
+packages = [
+    # This is required for our namespace package to work
+    { include = "pansen" }
+]
 repository = "https://github.com/pansen/aiven_challenge"
 classifiers = [
     "Programming Language :: Python",
@@ -53,7 +57,7 @@ vcrpy = "*"
 
 
 [tool.poetry.scripts]
-pansen = 'pansen.cli:run'
+pansen_aiven = 'pansen.aiven.main:run'
 
 
 [build-system]
