@@ -5,7 +5,7 @@ from httpx import Response
 
 from pansen.aiven.lib.http import batch_fetch
 from pansen.aiven.lib.schedule import Schedule
-from pansen.aiven.main import runner
+from pansen.aiven.producer import runner
 
 
 @pytest.mark.asyncio
