@@ -16,7 +16,7 @@ jobs:
           python-version: 3.8
 
       - name: Install environment
-        run: make bootstrap dev.build
+        run: make clean bootstrap dev.build
 
       - name: Purge Docker container volumes
         run: docker-compose down -v
