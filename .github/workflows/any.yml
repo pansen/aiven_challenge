@@ -29,5 +29,5 @@ jobs:
         run: docker-compose up -d
 
       - name: Run Tests
-        run: make test
+        run: make ci.test
 
