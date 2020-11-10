@@ -15,18 +15,18 @@ jobs:
         with:
           python-version: 3.8
 
-      # We don't do a full `make clean` here, not to degrade the performance  
-      - name: Cleanup caches
-        run: rm -f .env
-
-      - name: Install environment
-        run: make bootstrap dev.build
-
       - name: Purge Docker container volumes
         run: docker-compose down -v
 
       - name: Start Docker containers for Zookeeper, Kafka
         run: docker-compose up -d
+
+      # We don't do a full `make clean` here, not to degrade the performance
+      - name: Cleanup caches
+        run: rm -f .env
+
+      - name: Install environment
+        run: make bootstrap dev.build
 
       - name: Run Tests
         run: make ci.test
