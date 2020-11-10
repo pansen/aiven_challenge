@@ -19,14 +19,16 @@ This repository is intented to be used locally for execution or development.
    
 #### Execute
 
-To just run the current version, use 
+To just run the current version in containers, use 
 
 ```bash
-docker-compose up --build
+docker-compose -f docker-compose.all-in.yml up --build 
 ```
 
 
 ### Local Development
+
+Any development requires to have `docker-compose` with Zookeeper and Kafka up and running.
 
 #### Prerequisites
 

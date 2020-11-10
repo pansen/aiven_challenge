@@ -1,5 +1,11 @@
 version: '3.2'
 services:
+  aiven_checker:
+    build: ./
+    environment:
+      - HTTP_HOST=0.0.0.0
+    ports:
+     - "127.0.0.1:8000:8000"
 
   zookeeper:
     image: 'wurstmeister/zookeeper'
@@ -9,7 +15,6 @@ services:
       - 'zookeeper_data:/data/zookeeper'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
-
   kafka:
     image: 'wurstmeister/kafka'
     ports:
