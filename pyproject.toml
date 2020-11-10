@@ -62,7 +62,8 @@ vcrpy = "*"
 
 
 [tool.poetry.scripts]
-pansen_aiven = 'pansen.aiven.main:run'
+producer_pansen_aiven = 'pansen.aiven.producer:run'
+consumer_pansen_aiven = 'pansen.aiven.consumer:run'
 
 
 [tool.flakehell]

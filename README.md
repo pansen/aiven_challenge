@@ -5,6 +5,16 @@
 This repository tries to cover the challenge as good as possible. Since this is a coding challenge, 
 there are some limitations, some of them are marked as `TODO` in the code. 
 
+## Structure
+
+The project consists of two entry-points: 
+
+- `producer_pansen_aiven` is responsible to gather website availability data from sites, configured in 
+[`url_config.yaml`](./url_config.yaml). This data is published to the [configured](.env.example) Kafka.
+- `consumer_pansen_aiven` is supposed to be the consumer of [configured](.env.example) Kafka data, which 
+  then will be written to a Postgres instance (this part is still lacking). 
+
+
 ## Usage
 
 This repository is intented to be used locally for execution or development. 

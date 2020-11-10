@@ -11,5 +11,5 @@ RUN make bootstrap build
 ENV PATH=${_WORKDIR}/.venv/bin:$PATH
 
 EXPOSE 8000
-ENTRYPOINT [ "pansen_aiven" ]
+ENTRYPOINT [ "producer_pansen_aiven" ]
 
