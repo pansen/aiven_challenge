@@ -50,7 +50,7 @@ services:
         -c checkpoint_completion_target=0.8
         -c work_mem=8MB
     ports:
-      - 127.0.0.1:5433:5432
+      - 127.0.0.1:5434:5432
     environment:
       POSTGRES_USER: foo
       POSTGRES_PASSWORD: bar
