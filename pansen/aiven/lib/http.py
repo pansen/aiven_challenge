@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 
 import httpx
@@ -22,7 +23,10 @@ class MonitorUrlJob:
 
     async def fetch(self, client: AsyncClient):
         log.debug("Issuing: %s ...", self)
-        return await client.request(self.method.lower(), self.url, headers=self.headers, json=self.body)
+        utcnow = datetime.utcnow()
+        response = await client.request(self.method.lower(), self.url, headers=self.headers, json=self.body)
+        setattr(response.request, "issued_at", utcnow)  # noqa B010
+        return response
 
 
 async def batch_fetch(schedule):
