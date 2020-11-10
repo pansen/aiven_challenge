@@ -44,8 +44,8 @@ async def test_basic_asyncpg(config: Config, pg_connection: Connection):
         """
     SELECT *
     FROM pg_catalog.pg_tables
-    WHERE schemaname != 'pg_catalog' AND
-        schemaname != 'information_schema';
+    WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
     """
     )
     assert list == type(values)
+    assert 'monitor_url_metrics' == values[0]['tablename']

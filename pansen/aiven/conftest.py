@@ -62,12 +62,34 @@ async def asyncio_kafka_consumer(config: Config, event_loop: BaseSelectorEventLo
 
 
 @pytest.fixture(scope="function")
-async def pg_connection(config: Config) -> Connection:
+async def raw_pg_connection(config: Config) -> Connection:
     c = await asyncpg.connect(**config.POSTGRES_CONNECTION_ARGS)
-    await c.fetch("""BEGIN""")
     yield c
-    await c.fetch("""ROLLBACK""")
     await c.close()
+
+
+@pytest.fixture(scope="function")
+async def create_tables(raw_pg_connection: Connection):
+    await raw_pg_connection.fetch(
+        """
+    CREATE TABLE IF NOT EXISTS monitor_url_metrics (
+    duration integer,
+    status_code integer,
+    -- https://stackoverflow.com/a/417184
+    url varchar(2083),
+    method varchar(40),
+    num_bytes_downloaded integer,
+    issued_at  timestamptz
+    )
+    """
+    )
+
+
+@pytest.fixture(scope="function")
+async def pg_connection(raw_pg_connection, create_tables) -> Connection:
+    await raw_pg_connection.fetch("""BEGIN""")
+    yield raw_pg_connection
+    await raw_pg_connection.fetch("""ROLLBACK""")
 
 
 def _build_vcr_cassette_yaml_path_from_func_using_module(function):
