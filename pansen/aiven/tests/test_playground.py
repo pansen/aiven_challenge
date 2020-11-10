@@ -48,4 +48,4 @@ async def test_basic_asyncpg(config: Config, pg_connection: Connection):
     """
     )
     assert list == type(values)
-    assert 'monitor_url_metrics' == values[0]['tablename']
+    assert "monitor_url_metrics" == values[0]["tablename"]

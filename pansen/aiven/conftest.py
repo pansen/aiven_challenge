@@ -18,6 +18,7 @@ log = logging.getLogger(__name__)
 KAFKA_TEST_TOPIC = "kafka_topic_testing"
 KAFKA_TEST_GROUP = "kafka_group_testing"
 KAFKA_PARTITION = 0
+MONITOR_URL_METRICS_TABLE = "monitor_url_metrics"
 
 
 @pytest.fixture(scope="function")
@@ -70,16 +71,24 @@ async def raw_pg_connection(config: Config) -> Connection:
 
 @pytest.fixture(scope="function")
 async def create_tables(raw_pg_connection: Connection):
-    await raw_pg_connection.fetch(
+    await raw_pg_connection.execute(
         """
-    CREATE TABLE IF NOT EXISTS monitor_url_metrics (
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    """
+    )
+
+    await raw_pg_connection.execute(
+        f"""
+    CREATE TABLE IF NOT EXISTS {MONITOR_URL_METRICS_TABLE} (
+    id UUID NOT NULL DEFAULT uuid_generate_v1() ,
     duration integer,
     status_code integer,
     -- https://stackoverflow.com/a/417184
     url varchar(2083),
     method varchar(40),
     num_bytes_downloaded integer,
-    issued_at  timestamptz
+    issued_at  timestamptz,
+    CONSTRAINT idx_{MONITOR_URL_METRICS_TABLE}_id PRIMARY KEY ( id )
     )
     """
     )
@@ -87,9 +96,9 @@ async def create_tables(raw_pg_connection: Connection):
 
 @pytest.fixture(scope="function")
 async def pg_connection(raw_pg_connection, create_tables) -> Connection:
-    await raw_pg_connection.fetch("""BEGIN""")
+    await raw_pg_connection.execute("""BEGIN""")
     yield raw_pg_connection
-    await raw_pg_connection.fetch("""ROLLBACK""")
+    await raw_pg_connection.execute("""ROLLBACK""")
 
 
 def _build_vcr_cassette_yaml_path_from_func_using_module(function):
