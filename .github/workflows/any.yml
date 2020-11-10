@@ -15,8 +15,12 @@ jobs:
         with:
           python-version: 3.8
 
+      # We don't do a full `make clean` here, not to degrade the performance  
+      - name: Cleanup caches
+        run: rm -f .env
+
       - name: Install environment
-        run: make clean bootstrap dev.build
+        run: make bootstrap dev.build
 
       - name: Purge Docker container volumes
         run: docker-compose down -v
