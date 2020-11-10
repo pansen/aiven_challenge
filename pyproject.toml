@@ -38,6 +38,8 @@ ujson = "*"
 aiokafka = "*"
 msgpack = "*"
 
+asyncpg = "*"
+
 # http client stuff
 requests = "*"
 # see: https://docs.aiohttp.org/en/v2.3.4/
