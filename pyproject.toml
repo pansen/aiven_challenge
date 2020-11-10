@@ -41,6 +41,7 @@ msgpack = "*"
 asyncpg = "*"
 
 # http client
+aiohttp = "*"
 httpx = "*"
 
 

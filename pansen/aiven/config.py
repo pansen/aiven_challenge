@@ -55,11 +55,12 @@ def configure() -> Config:
     # connection string
     parsed = parse.urlparse(os.getenv("POSTGRES_URL"))
     # create a kw_args dict, which fits https://github.com/MagicStack/asyncpg#basic-usage
-    locals()['POSTGRES_CONNECTION_ARGS'] = {
-        'user': parsed.username,
-        'password': parsed.password,
-        'host': parsed.hostname,
-        'database': parsed.path.lstrip('/'),
+    locals()["POSTGRES_CONNECTION_ARGS"] = {
+        "user": parsed.username,
+        "password": parsed.password,
+        "host": parsed.hostname,
+        "port": parsed.port,
+        "database": parsed.path.lstrip("/"),
     }
     # Take all local variables to the `Config` constructor, if they start uppercase
     c = Config(**{key: value for (key, value) in locals().items() if key.isupper()})

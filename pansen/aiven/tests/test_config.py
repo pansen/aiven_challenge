@@ -12,12 +12,13 @@ def test_URL_CONFIG_FILE_is_absolute(config: Config):
 def test_config_postgres_url_parse(config: Config):
     urlparse = parse.urlparse(config.POSTGRES_URL)
     assert urlparse.hostname
+    assert urlparse.port
     assert urlparse.username
     assert urlparse.password
-    assert urlparse.path.lstrip('/')
+    assert urlparse.path.lstrip("/")
 
-    assert urlparse.hostname == config.POSTGRES_CONNECTION_ARGS['host']
-    assert urlparse.username == config.POSTGRES_CONNECTION_ARGS['user']
-    assert urlparse.password == config.POSTGRES_CONNECTION_ARGS['password']
-    assert urlparse.path.lstrip('/') == config.POSTGRES_CONNECTION_ARGS['database']
-
+    assert urlparse.hostname == config.POSTGRES_CONNECTION_ARGS["host"]
+    assert urlparse.port == config.POSTGRES_CONNECTION_ARGS["port"]
+    assert urlparse.username == config.POSTGRES_CONNECTION_ARGS["user"]
+    assert urlparse.password == config.POSTGRES_CONNECTION_ARGS["password"]
+    assert urlparse.path.lstrip("/") == config.POSTGRES_CONNECTION_ARGS["database"]

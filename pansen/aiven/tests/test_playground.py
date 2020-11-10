@@ -1,8 +1,10 @@
 import pytest
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from aiokafka.structs import RecordMetadata
+from asyncpg import Connection
 from kafka import TopicPartition
 
+from pansen.aiven.config import Config
 from pansen.aiven.conftest import KAFKA_PARTITION, KAFKA_TEST_TOPIC
 
 
@@ -34,3 +36,16 @@ async def test_kafka_consumer_consume(
         return
 
     assert False, "Did not consume anything"
+
+
+@pytest.mark.asyncio
+async def test_basic_asyncpg(config: Config, pg_connection: Connection):
+    values = await pg_connection.fetch(
+        """
+    SELECT *
+    FROM pg_catalog.pg_tables
+    WHERE schemaname != 'pg_catalog' AND
+        schemaname != 'information_schema';
+    """
+    )
+    assert list == type(values)

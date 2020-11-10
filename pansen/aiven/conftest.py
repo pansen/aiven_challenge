@@ -4,9 +4,11 @@ import logging
 import os
 from asyncio.selector_events import BaseSelectorEventLoop
 
+import asyncpg
 import msgpack
 import pytest
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
+from asyncpg import Connection
 from vcr import VCR
 
 from pansen.aiven.config import Config, configure
@@ -57,6 +59,15 @@ async def asyncio_kafka_consumer(config: Config, event_loop: BaseSelectorEventLo
     finally:
         # Will leave consumer group; perform autocommit if enabled.
         await consumer.stop()
+
+
+@pytest.fixture(scope="function")
+async def pg_connection(config: Config) -> Connection:
+    c = await asyncpg.connect(**config.POSTGRES_CONNECTION_ARGS)
+    await c.fetch("""BEGIN""")
+    yield c
+    await c.fetch("""ROLLBACK""")
+    await c.close()
 
 
 def _build_vcr_cassette_yaml_path_from_func_using_module(function):
