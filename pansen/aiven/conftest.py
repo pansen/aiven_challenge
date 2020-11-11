@@ -4,18 +4,21 @@ import logging
 import os
 from asyncio.selector_events import BaseSelectorEventLoop
 
-import msgpack
+import asyncpg
 import pytest
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
+from asyncpg import Connection
 from vcr import VCR
 
 from pansen.aiven.config import Config, configure
+from pansen.aiven.consumer import consumer_faust_app
 
 log = logging.getLogger(__name__)
 
 KAFKA_TEST_TOPIC = "kafka_topic_testing"
 KAFKA_TEST_GROUP = "kafka_group_testing"
 KAFKA_PARTITION = 0
+MONITOR_URL_METRICS_TABLE = "monitor_url_metrics"
 
 
 @pytest.fixture(scope="function")
@@ -59,6 +62,58 @@ async def asyncio_kafka_consumer(config: Config, event_loop: BaseSelectorEventLo
         await consumer.stop()
 
 
+@pytest.fixture(scope="function")
+async def raw_pg_connection(config: Config) -> Connection:
+    c = await asyncpg.connect(**config.POSTGRES_CONNECTION_ARGS)
+    yield c
+    await c.close()
+
+
+@pytest.fixture(scope="function")
+async def create_tables(raw_pg_connection: Connection):
+    await raw_pg_connection.execute(
+        """
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    """
+    )
+
+    await raw_pg_connection.execute(
+        f"""
+    CREATE TABLE IF NOT EXISTS {MONITOR_URL_METRICS_TABLE} (
+    id UUID NOT NULL DEFAULT uuid_generate_v1() ,
+    duration integer,
+    status_code integer,
+    -- https://stackoverflow.com/a/417184
+    url varchar(2083),
+    method varchar(40),
+    num_bytes_downloaded integer,
+    issued_at  timestamptz,
+    CONSTRAINT idx_{MONITOR_URL_METRICS_TABLE}_id PRIMARY KEY ( id )
+    )
+    """
+    )
+
+
+@pytest.fixture(scope="function")
+async def pg_connection(raw_pg_connection, create_tables) -> Connection:
+    await raw_pg_connection.execute("""BEGIN""")
+    yield raw_pg_connection
+    await raw_pg_connection.execute("""ROLLBACK""")
+
+
+@pytest.fixture()
+def faust_app(event_loop: BaseSelectorEventLoop):
+    """
+    Fixture for our Faust app.
+
+    See: https://faust.readthedocs.io/en/latest/userguide/testing.html#testing-with-pytest
+    """
+    consumer_faust_app.finalize()
+    consumer_faust_app.conf.store = "memory://"
+    consumer_faust_app.flow_control.resume()
+    return consumer_faust_app
+
+
 def _build_vcr_cassette_yaml_path_from_func_using_module(function):
     return os.path.join(os.path.dirname(inspect.getfile(function)), function.__name__ + ".yaml")
 
@@ -75,7 +130,7 @@ cast_vcr = VCR(
 
 def _unpack(v):
     log.debug("Try unpacking: %s ...", v)
-    return msgpack.unpackb(v)
+    return v
 
 
 async def _wait_topic(client, topic):

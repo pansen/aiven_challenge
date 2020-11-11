@@ -36,15 +36,12 @@ dacite = "*"
 ujson = "*"
 
 aiokafka = "*"
-msgpack = "*"
+faust-streaming = "*"
 
-# http client stuff
-requests = "*"
-# see: https://docs.aiohttp.org/en/v2.3.4/
+asyncpg = "*"
+
+# http client
 aiohttp = "*"
-cchardet = "*"
-aiodns = "*"
-# another one
 httpx = "*"
 
 
