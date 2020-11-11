@@ -31,7 +31,13 @@ class MonitorUrlMetrics(faust.Record):
     def from_json(cls, data: str):
         return _monitor_url_metrics_schema.loads(data)
 
-    def to_json_dict(self):
+    def to_wire(self):
+        """
+        Convert this DTO to a transmittable format.
+
+        This format needs to match the definition and encoding in our consumer,
+        `pansen.aiven.consumer.url_metrics_agent`
+        """
         return _monitor_url_metrics_schema.dumps(self).encode("utf-8")
 
 

@@ -11,6 +11,6 @@ async def test_url_metrics_agent(faust_app):
     See: https://faust.readthedocs.io/en/latest/userguide/testing.html#testing-with-pytest
     """
     async with url_metrics_agent.test_context() as agent:
-        mum = MonitorUrlMetrics.from_respose(_build_response()).to_json_dict()
+        mum = MonitorUrlMetrics.from_respose(_build_response()).to_wire()
         event = await agent.put(mum)
         assert agent.results[event.message.offset] == mum

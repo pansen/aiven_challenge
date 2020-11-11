@@ -6,8 +6,10 @@ from urllib import parse
 
 from aiokafka import AIOKafkaProducer
 from dotenv import load_dotenv
+from ujson import dumps
 
 from pansen.aiven import PANSEN_AIVEN_PROJECT_ROOT
+from pansen.aiven.lib.transport import MonitorUrlMetrics
 
 
 @dataclass
@@ -19,12 +21,19 @@ class Config:
     POSTGRES_CONNECTION_ARGS: dict
 
     async def get_kafka_producer(self, event_loop=None) -> AIOKafkaProducer:
+        def _serializer(v):
+            if isinstance(v, MonitorUrlMetrics):
+                return v.to_wire()
+            if isinstance(v, dict):
+                return dumps(v).encode("utf-8")
+            raise NotImplementedError(f"Value-type {type(v)} is not implemented.")
+
         # https://github.com/aio-libs/aiokafka#aiokafkaproducer
         producer = AIOKafkaProducer(
             loop=event_loop and event_loop or asyncio.get_event_loop(),
             bootstrap_servers=self.KAFKA_SERVER,
             enable_idempotence=True,
-            value_serializer=lambda v: v,
+            value_serializer=_serializer,
         )
         # Get cluster layout and initial topic/partition leadership information
         await producer.start()

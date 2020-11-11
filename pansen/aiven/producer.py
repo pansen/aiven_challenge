@@ -17,9 +17,8 @@ async def runner(schedule):
             sends = []
             for response in jobs:
                 mu_metric = MonitorUrlMetrics.from_respose(response)
-                as_dict = mu_metric.to_json_dict()
-                log.debug("Sending to Kafka: %s ...", as_dict)
-                sends.append(_producer.send(schedule.config.KAFKA_TOPIC, as_dict))
+                log.debug("Sending to Kafka: %s ...", mu_metric)
+                sends.append(_producer.send(schedule.config.KAFKA_TOPIC, mu_metric))
             await asyncio.gather(*sends)
     finally:
         await _producer.stop()
