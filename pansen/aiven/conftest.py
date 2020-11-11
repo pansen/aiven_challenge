@@ -12,6 +12,7 @@ from asyncpg import Connection
 from vcr import VCR
 
 from pansen.aiven.config import Config, configure
+from pansen.aiven.consumer import consumer_faust_app
 
 log = logging.getLogger(__name__)
 
@@ -99,6 +100,19 @@ async def pg_connection(raw_pg_connection, create_tables) -> Connection:
     await raw_pg_connection.execute("""BEGIN""")
     yield raw_pg_connection
     await raw_pg_connection.execute("""ROLLBACK""")
+
+
+@pytest.fixture()
+def faust_app(event_loop: BaseSelectorEventLoop):
+    """
+    Fixture for our Faust app.
+
+    See: https://faust.readthedocs.io/en/latest/userguide/testing.html#testing-with-pytest
+    """
+    consumer_faust_app.finalize()
+    consumer_faust_app.conf.store = "memory://"
+    consumer_faust_app.flow_control.resume()
+    return consumer_faust_app
 
 
 def _build_vcr_cassette_yaml_path_from_func_using_module(function):

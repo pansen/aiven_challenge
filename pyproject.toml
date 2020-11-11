@@ -37,6 +37,7 @@ ujson = "*"
 
 aiokafka = "*"
 msgpack = "*"
+faust-streaming = "*"
 
 asyncpg = "*"
 
