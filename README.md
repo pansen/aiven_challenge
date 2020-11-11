@@ -19,27 +19,6 @@ The project consists of two entry-points:
 
 This repository is intented to be used locally for execution or development. 
 
-### Local Execution 
-
-#### Prerequisites
-
-- You need to have UNIX compatible OS
-- You need Docker installed
-- You need `docker-compose` installed
-   
-#### Execute
-
-To just run the current version in containers, use 
-
-```bash
-docker-compose -f docker-compose.all-in.yml up --build 
-```
-
-
-### Local Development
-
-Any development requires to have `docker-compose` with Zookeeper and Kafka up and running.
-
 #### Prerequisites
 
 - You need to have UNIX compatible OS
@@ -54,6 +33,29 @@ Any development requires to have `docker-compose` with Zookeeper and Kafka up an
   ![PyCharm Testrunner Configuration](doc/img/PyCharm_Testrunner.jpg)
 
 #### Execute
+
+    Any development or usage requires to have `docker-compose` with Zookeeper and 
+    Kafka up and running.
+
+##### Execution
+
+To simply run the services use this to prepare a local sandbox without development tools:
+
+```bash
+make build
+```
+
+.. then start a producer and a consumer in separate terminals
+
+```bash
+make producer
+```
+
+```bash
+make consumer
+```
+
+##### Development
 
 To build your development environment, use
 

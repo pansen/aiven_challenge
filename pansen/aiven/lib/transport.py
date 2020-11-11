@@ -1,15 +1,13 @@
-from dataclasses import dataclass
 from datetime import datetime
 
-from dacite import from_dict
+import faust
 from httpx import Response
 from marshmallow import fields, post_load
 
 from pansen.aiven.lib import UjsonSchema
 
 
-@dataclass(frozen=True)
-class MonitorUrlMetrics:
+class MonitorUrlMetrics(faust.Record):
     duration: int
     status_code: int
     url: str
@@ -51,7 +49,7 @@ class MonitorUrlMetricsSchema(UjsonSchema):
 
     @post_load
     def make_object(self, data, **kwargs) -> MonitorUrlMetrics:
-        e: MonitorUrlMetrics = from_dict(data_class=MonitorUrlMetrics, data=data)
+        e: MonitorUrlMetrics = MonitorUrlMetrics(**data)
         return e
 
 

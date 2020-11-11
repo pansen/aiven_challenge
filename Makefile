@@ -34,6 +34,14 @@ dev.build: .env
 dev.update:
 	$(POETRY) update
 
+.PHONY: consumer
+consumer:
+	.venv/bin/consumer_pansen_aiven worker -l info
+
+.PHONY: producer
+producer:
+	.venv/bin/producer_pansen_aiven
+
 .PHONY: black
 black:
 	$(BLACK) pansen
