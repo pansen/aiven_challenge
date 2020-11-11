@@ -5,7 +5,6 @@ import os
 from asyncio.selector_events import BaseSelectorEventLoop
 
 import asyncpg
-import msgpack
 import pytest
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from asyncpg import Connection
@@ -131,7 +130,7 @@ cast_vcr = VCR(
 
 def _unpack(v):
     log.debug("Try unpacking: %s ...", v)
-    return msgpack.unpackb(v)
+    return v
 
 
 async def _wait_topic(client, topic):

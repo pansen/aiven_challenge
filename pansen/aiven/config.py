@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from logging.config import dictConfig
 from urllib import parse
 
-import msgpack
 from aiokafka import AIOKafkaProducer
 from dotenv import load_dotenv
 
@@ -25,7 +24,7 @@ class Config:
             loop=event_loop and event_loop or asyncio.get_event_loop(),
             bootstrap_servers=self.KAFKA_SERVER,
             enable_idempotence=True,
-            value_serializer=lambda v: msgpack.packb(v),
+            value_serializer=lambda v: v,
         )
         # Get cluster layout and initial topic/partition leadership information
         await producer.start()

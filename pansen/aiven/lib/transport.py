@@ -30,11 +30,11 @@ class MonitorUrlMetrics:
         )
 
     @classmethod
-    def from_json(cls, data: dict):
-        return _monitor_url_metrics_schema.load(data)
+    def from_json(cls, data: str):
+        return _monitor_url_metrics_schema.loads(data)
 
     def to_json_dict(self):
-        return _monitor_url_metrics_schema.dump(self)
+        return _monitor_url_metrics_schema.dumps(self).encode("utf-8")
 
 
 class MonitorUrlMetricsSchema(UjsonSchema):

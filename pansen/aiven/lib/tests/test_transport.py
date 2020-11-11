@@ -33,7 +33,7 @@ def test_transport_schema():
     assert isinstance(mm_deserialized, MonitorUrlMetrics)
     assert isinstance(mm_deserialized.issued_at, datetime)
 
-    mm_deserialized = MonitorUrlMetrics.from_json(serialized)
+    mm_deserialized = MonitorUrlMetrics.from_json(schema.dumps(mm))
     assert isinstance(mm_deserialized, MonitorUrlMetrics)
     assert isinstance(mm_deserialized.issued_at, datetime)
 
