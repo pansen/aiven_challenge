@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from ujson import dumps
 
 from pansen.aiven import PANSEN_AIVEN_PROJECT_ROOT
+from pansen.aiven.lib.db import MonitorUrlMetricsRepository
 from pansen.aiven.lib.transport import MonitorUrlMetrics
 
 
@@ -42,6 +43,8 @@ class Config:
         await producer.start()
         return producer
 
+    def get_monitor_url_metrics_repository(self) -> MonitorUrlMetricsRepository:
+        return MonitorUrlMetricsRepository(self.POSTGRES_POOL)
 
 
 async def configure() -> Config:

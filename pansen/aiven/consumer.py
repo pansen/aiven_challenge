@@ -36,4 +36,6 @@ def run():
     """
     Entry-point to have the ability to perform some application start logic.
     """
-    consumer_faust_app.main()
+    config: Config = configure()
+    consumer_faust_app.conf.custom_config = config
+    return consumer_faust_app.main()
