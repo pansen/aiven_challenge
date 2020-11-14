@@ -75,6 +75,9 @@ async def faust_app(config: Config) -> App:
     #  Cannot create topic: f-reply-e74b5305-7b45-44e0-8252-c5dc0357eead (38):
     #  Replication factor must be larger than 0.
     # ```
+    # TODO andi:
+    #         to make this work, `faust` needs to be patched at
+    #         `faust.agents.replies.ReplyConsumer._reply_topic`
     consumer_faust_app.conf.topic_replication_factor = 1
 
     consumer_faust_app.finalize()
