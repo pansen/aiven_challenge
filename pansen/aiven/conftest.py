@@ -8,6 +8,7 @@ import asyncpg
 import pytest
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from asyncpg import Connection
+from faust import App
 from vcr import VCR
 
 from pansen.aiven.config import Config, configure
@@ -62,6 +63,22 @@ async def asyncio_kafka_consumer(config: Config, event_loop: BaseSelectorEventLo
         await consumer.stop()
 
 
+@pytest.fixture()
+async def faust_app(config: Config) -> App:
+    """
+    Fixture for our Faust app, only bound to memory.
+
+    See: https://faust.readthedocs.io/en/latest/userguide/testing.html#testing-with-pytest
+    """
+    consumer_faust_app.finalize()
+    consumer_faust_app.conf.store = "memory://"
+
+    try:
+        yield consumer_faust_app
+    finally:
+        await consumer_faust_app.stop()
+
+
 @pytest.fixture(scope="function")
 async def raw_pg_connection(config: Config) -> Connection:
     c = await asyncpg.connect(**config.POSTGRES_CONNECTION_ARGS)
@@ -99,19 +116,6 @@ async def pg_connection(raw_pg_connection, create_tables) -> Connection:
     await raw_pg_connection.execute("""BEGIN""")
     yield raw_pg_connection
     await raw_pg_connection.execute("""ROLLBACK""")
-
-
-@pytest.fixture()
-def faust_app(event_loop: BaseSelectorEventLoop):
-    """
-    Fixture for our Faust app.
-
-    See: https://faust.readthedocs.io/en/latest/userguide/testing.html#testing-with-pytest
-    """
-    consumer_faust_app.finalize()
-    consumer_faust_app.conf.store = "memory://"
-    consumer_faust_app.flow_control.resume()
-    return consumer_faust_app
 
 
 def _build_vcr_cassette_yaml_path_from_func_using_module(function):

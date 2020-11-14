@@ -1,8 +1,12 @@
+import logging
+
 import pytest
 
 from pansen.aiven.consumer import url_metrics_agent
 from pansen.aiven.lib.tests.test_transport import _build_response
 from pansen.aiven.lib.transport import MonitorUrlMetrics
+
+log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio()
