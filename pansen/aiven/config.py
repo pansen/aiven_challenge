@@ -4,7 +4,9 @@ from dataclasses import dataclass
 from logging.config import dictConfig
 from urllib import parse
 
+import asyncpg
 from aiokafka import AIOKafkaProducer
+from asyncpg.pool import Pool
 from dotenv import load_dotenv
 from ujson import dumps
 
@@ -19,6 +21,7 @@ class Config:
     URL_CONFIG_FILE: str
     POSTGRES_URL: str
     POSTGRES_CONNECTION_ARGS: dict
+    POSTGRES_POOL: Pool
 
     async def get_kafka_producer(self, event_loop=None) -> AIOKafkaProducer:
         def _serializer(v):
@@ -40,7 +43,8 @@ class Config:
         return producer
 
 
-def configure() -> Config:
+
+async def configure() -> Config:
     """
     Parse the ENV and prepare a `Config` instance according to that.
     """
@@ -70,6 +74,8 @@ def configure() -> Config:
         "port": parsed.port,
         "database": parsed.path.lstrip("/"),
     }
+    locals()["POSTGRES_POOL"] = await asyncpg.create_pool(**locals()["POSTGRES_CONNECTION_ARGS"])
+
     # Take all local variables to the `Config` constructor, if they start uppercase
     c = Config(**{key: value for (key, value) in locals().items() if key.isupper()})
 

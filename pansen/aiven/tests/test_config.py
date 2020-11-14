@@ -1,6 +1,8 @@
 import os
 from urllib import parse
 
+from asyncpg.pool import Pool
+
 from pansen.aiven.config import Config
 
 
@@ -22,3 +24,7 @@ def test_config_postgres_url_parse(config: Config):
     assert urlparse.username == config.POSTGRES_CONNECTION_ARGS["user"]
     assert urlparse.password == config.POSTGRES_CONNECTION_ARGS["password"]
     assert urlparse.path.lstrip("/") == config.POSTGRES_CONNECTION_ARGS["database"]
+
+
+def test_connection_pool(config: Config):
+    assert isinstance(config.POSTGRES_POOL, Pool)

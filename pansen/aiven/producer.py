@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Optional
 
 from pansen.aiven.config import configure
 from pansen.aiven.lib.http import batch_fetch
@@ -9,7 +10,10 @@ from pansen.aiven.lib.transport import MonitorUrlMetrics
 log = logging.getLogger(__name__)
 
 
-async def runner(schedule):
+async def runner(schedule: Optional[Schedule] = None):
+    if not schedule:
+        c = await configure()
+        schedule = Schedule(c, max_count=2)
     _producer = await schedule.config.get_kafka_producer()  # noqa F841
 
     try:
@@ -28,6 +32,4 @@ def run():
     """
     Entry-point to have the ability to perform some application start logic.
     """
-    c = configure()
-    schedule = Schedule(c, max_count=2)
-    asyncio.run(runner(schedule))
+    asyncio.run(runner())

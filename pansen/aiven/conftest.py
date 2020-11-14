@@ -23,9 +23,9 @@ MONITOR_URL_METRICS_TABLE = "monitor_url_metrics"
 
 
 @pytest.fixture(scope="function")
-def config() -> Config:
+async def config() -> Config:
     os.environ["URL_CONFIG_FILE"] = "./pansen/aiven/tests/test_url_config.yaml"
-    return configure()
+    return await configure()
 
 
 @pytest.fixture(scope="function")
