@@ -1,7 +1,6 @@
 import logging
 
 import faust
-import yarl
 
 from pansen.aiven.config import Config, configure
 from pansen.aiven.lib.db import MonitorUrlMetricsRepository
@@ -44,4 +43,11 @@ def run():
     """
     config: Config = configure()
     consumer_faust_app.conf.custom_config = config
+
+    # TODO andi: any useful?
+    # consumer_faust_app.conf.DEFAULT_BROKER_URL = config.KAFKA_SERVER
+    # consumer_faust_app.conf.broker = yarl.URL(config.KAFKA_SERVER)
+    # consumer_faust_app.conf.broker_consumer = yarl.URL(config.KAFKA_SERVER)
+    # consumer_faust_app.conf.broker_producer = yarl.URL(config.KAFKA_SERVER)
+    
     return consumer_faust_app.main()
