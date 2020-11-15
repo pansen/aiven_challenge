@@ -23,7 +23,7 @@ async def test_url_metrics_agent(faust_app, pg_connection: Connection):
     SELECT * FROM {MONITOR_URL_METRICS_TABLE}
     """
     )
-    assert 0 == len(rows)
+    len_before = len(rows)
 
     async with url_metrics_agent.test_context() as agent:
         mum = MonitorUrlMetrics.from_respose(_build_response())
@@ -43,7 +43,7 @@ async def test_url_metrics_agent(faust_app, pg_connection: Connection):
         SELECT * FROM {MONITOR_URL_METRICS_TABLE}
         """
         )
-        assert 1 == len(rows)
+        assert len_before + 1 == len(rows)
 
         row = await pg_connection.fetchrow(
             f"""
