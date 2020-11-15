@@ -44,7 +44,7 @@ consumer:
 
 .PHONY: producer
 producer:
-	.venv/bin/producer_pansen_aiven
+	.venv/bin/producer_pansen_aiven --count=3
 	@make dev.count
 
 .PHONY: dev.count

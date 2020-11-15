@@ -57,6 +57,7 @@ class MonitorUrlMetricsRepository:
                     mum.issued_at,
                 )
                 new_row_id = UUID(str(inserted[0][0]))
+                mum.id = new_row_id
                 log.debug("... stored with id: %s: %s.", new_row_id, mum)
                 return new_row_id
 

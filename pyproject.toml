@@ -34,6 +34,7 @@ pyyaml = "*"
 marshmallow = "*"
 dacite = "*"
 ujson = "*"
+click = "*"
 
 aiokafka = "*"
 faust-streaming = "*"
