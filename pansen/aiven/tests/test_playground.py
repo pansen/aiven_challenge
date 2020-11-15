@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from aiokafka.structs import RecordMetadata
@@ -6,6 +8,8 @@ from kafka import TopicPartition
 
 from pansen.aiven.config import Config
 from pansen.aiven.conftest import KAFKA_PARTITION, KAFKA_TEST_TOPIC
+
+log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio

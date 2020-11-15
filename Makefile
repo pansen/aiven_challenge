@@ -50,16 +50,20 @@ black:
 flakehell:
 	.venv/bin/flakehell lint pansen
 
+.PHONY: mypy
+mypy:
+	.venv/bin/mypy --ignore-missing-imports pansen
+
 .PHONY: black.check
 black.check:
 	$(BLACK) --check pansen
 
 .PHONY: test
-test: black flakehell
+test: black flakehell mypy
 	.venv/bin/pytest pansen
 
 .PHONY: ci.test
-ci.test: black.check flakehell
+ci.test: black.check flakehell mypy
 	.venv/bin/pytest pansen
 
 

@@ -3,33 +3,36 @@ import inspect
 import logging
 import os
 from asyncio.selector_events import BaseSelectorEventLoop
+from typing import AsyncGenerator
+from unittest import mock
 
 import asyncpg
 import pytest
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from asyncpg import Connection
+from faust import App
 from vcr import VCR
 
 from pansen.aiven.config import Config, configure
 from pansen.aiven.consumer import consumer_faust_app
+from pansen.aiven.lib.db import MONITOR_URL_METRICS_TABLE, MonitorUrlMetricsRepository
 
 log = logging.getLogger(__name__)
 
 KAFKA_TEST_TOPIC = "kafka_topic_testing"
 KAFKA_TEST_GROUP = "kafka_group_testing"
 KAFKA_PARTITION = 0
-MONITOR_URL_METRICS_TABLE = "monitor_url_metrics"
 
 
 @pytest.fixture(scope="function")
-def config() -> Config:
+async def _config() -> Config:
     os.environ["URL_CONFIG_FILE"] = "./pansen/aiven/tests/test_url_config.yaml"
-    return configure()
+    return await configure()
 
 
 @pytest.fixture(scope="function")
-async def asyncio_kafka_producer(config: Config, event_loop: BaseSelectorEventLoop) -> AIOKafkaProducer:
-    producer = await config.get_kafka_producer(event_loop)
+async def asyncio_kafka_producer(_config: Config, event_loop: BaseSelectorEventLoop) -> AIOKafkaProducer:
+    producer = await _config.get_kafka_producer(event_loop)
     await _wait_topic(producer.client, KAFKA_TEST_TOPIC)
 
     try:
@@ -40,11 +43,11 @@ async def asyncio_kafka_producer(config: Config, event_loop: BaseSelectorEventLo
 
 
 @pytest.fixture(scope="function")
-async def asyncio_kafka_consumer(config: Config, event_loop: BaseSelectorEventLoop) -> AIOKafkaConsumer:
+async def asyncio_kafka_consumer(_config: Config, event_loop: BaseSelectorEventLoop) -> AIOKafkaConsumer:
     consumer = AIOKafkaConsumer(
         KAFKA_TEST_TOPIC,
         loop=event_loop,
-        bootstrap_servers=config.KAFKA_SERVER,
+        bootstrap_servers=_config.KAFKA_SERVER,
         group_id=KAFKA_TEST_GROUP,
         # https://github.com/aio-libs/aiokafka/blob/f7f55b19b43b084edc844c3531a570d233d37912/tests/test_consumer.py#L34-L37
         auto_offset_reset="earliest",
@@ -62,9 +65,53 @@ async def asyncio_kafka_consumer(config: Config, event_loop: BaseSelectorEventLo
         await consumer.stop()
 
 
+@pytest.fixture()
+async def config(_config: Config, monitor_metrics_repository: MonitorUrlMetricsRepository) -> Config:
+    """
+    Fixture to patch `Config.get_monitor_url_metrics_repository` to have an instance which is using
+    our testsuites PG connection, which does not contain the regular transaction commit handling.
+    """
+    with mock.patch.object(
+        _config, "get_monitor_url_metrics_repository", return_value=monitor_metrics_repository
+    ) as _c:  # noqa F841
+        yield _config
+
+
+@pytest.fixture()
+async def faust_app(config: Config) -> AsyncGenerator[App, None]:
+    """
+    Fixture for our Faust app, only bound to memory.
+
+    See: https://faust.readthedocs.io/en/latest/userguide/testing.html#testing-with-pytest
+    """
+    consumer_faust_app.finalize()
+    consumer_faust_app.conf.store = "memory://"
+    consumer_faust_app.conf.custom_config = config
+
+    try:
+        yield consumer_faust_app
+    finally:
+        await consumer_faust_app.stop()
+
+
+@pytest.fixture(autouse=True)
+async def monitor_metrics_repository(_config: Config, pg_connection: Connection) -> MonitorUrlMetricsRepository:
+    """
+    Create a `MonitorUrlMetricsRepository` instance, which is using the non-transactional PG connection
+    of our testsuite.
+    """
+
+    async def _pg_connection():
+        yield pg_connection
+
+    mmr = MonitorUrlMetricsRepository(_config.POSTGRES_POOL)
+    with mock.patch.object(mmr, "_transaction", side_effect=_pg_connection) as _transaction:  # noqa F841
+        yield mmr
+
+
 @pytest.fixture(scope="function")
-async def raw_pg_connection(config: Config) -> Connection:
-    c = await asyncpg.connect(**config.POSTGRES_CONNECTION_ARGS)
+async def raw_pg_connection(_config: Config) -> Connection:
+    c = await asyncpg.connect(**_config.POSTGRES_CONNECTION_ARGS)
     yield c
     await c.close()
 
@@ -99,19 +146,6 @@ async def pg_connection(raw_pg_connection, create_tables) -> Connection:
     await raw_pg_connection.execute("""BEGIN""")
     yield raw_pg_connection
     await raw_pg_connection.execute("""ROLLBACK""")
-
-
-@pytest.fixture()
-def faust_app(event_loop: BaseSelectorEventLoop):
-    """
-    Fixture for our Faust app.
-
-    See: https://faust.readthedocs.io/en/latest/userguide/testing.html#testing-with-pytest
-    """
-    consumer_faust_app.finalize()
-    consumer_faust_app.conf.store = "memory://"
-    consumer_faust_app.flow_control.resume()
-    return consumer_faust_app
 
 
 def _build_vcr_cassette_yaml_path_from_func_using_module(function):
