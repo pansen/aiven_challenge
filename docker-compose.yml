@@ -23,6 +23,7 @@ services:
       - LOG4J_LOGGER_KAFKA_AUTHORIZER_LOGGER=DEBUG, authorizerAppender
       - KAFKA_LISTENERS=PLAINTEXT://:9092
       - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
+      - KAFKA_CREATE_TOPICS=url_metrics:2:1
     depends_on:
       - zookeeper
 

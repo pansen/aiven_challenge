@@ -20,6 +20,7 @@ async def runner(schedule: Optional[Schedule] = None, max_count=2):
 
     try:
         async for jobs in batch_fetch(schedule):
+            # https://aiokafka.readthedocs.io/en/stable/producer.html#direct-batch-control
             batch = _producer.create_batch()
             for response in jobs:
                 mu_metric = MonitorUrlMetrics.from_respose(response)
