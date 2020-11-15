@@ -34,10 +34,6 @@ class MonitorUrlMetrics(faust.Record):
     def from_json(cls, data: dict):
         return _monitor_url_metrics_schema.load(data)
 
-    @classmethod
-    def from_str(cls, data: str):
-        return _monitor_url_metrics_schema.loads(data)
-
     def to_wire(self):
         """
         Convert this DTO to a transmittable format.

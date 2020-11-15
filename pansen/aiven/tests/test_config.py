@@ -29,8 +29,9 @@ def test_config_postgres_url_parse(config: Config):
     assert urlparse.path.lstrip("/") == config.POSTGRES_CONNECTION_ARGS["database"]
 
 
-def test_connection_pool(config: Config):
-    assert isinstance(config.POSTGRES_POOL, Pool)
+@pytest.mark.asyncio()
+async def test_connection_pool(config: Config):
+    assert isinstance(await config.POSTGRES_POOL, Pool)
 
 
 @pytest.mark.asyncio()
@@ -55,7 +56,7 @@ async def test_monitor_config_patched_metrics_repository(
     """
     Validate the `config` fixture is using the patched `config.get_monitor_url_metrics_repository`
     """
-    mumr = config.get_monitor_url_metrics_repository()
+    mumr = await config.get_monitor_url_metrics_repository()
     assert isinstance(mumr, MonitorUrlMetricsRepository)
 
     async for c in mumr._transaction():

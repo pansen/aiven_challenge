@@ -2,6 +2,7 @@ import asyncio
 import os
 from dataclasses import dataclass
 from logging.config import dictConfig
+from typing import Optional
 from urllib import parse
 
 import asyncpg
@@ -22,7 +23,14 @@ class Config:
     URL_CONFIG_FILE: str
     POSTGRES_URL: str
     POSTGRES_CONNECTION_ARGS: dict
-    POSTGRES_POOL: Pool
+    _POSTGRES_POOL: Optional[Pool] = None
+
+    @property
+    async def POSTGRES_POOL(self) -> Pool:
+        if self._POSTGRES_POOL:
+            return self._POSTGRES_POOL
+        self._POSTGRES_POOL = await asyncpg.create_pool(**self.POSTGRES_CONNECTION_ARGS)
+        return self._POSTGRES_POOL
 
     async def get_kafka_producer(self, event_loop=None) -> AIOKafkaProducer:
         def _serializer(v):
@@ -43,11 +51,11 @@ class Config:
         await producer.start()
         return producer
 
-    def get_monitor_url_metrics_repository(self) -> MonitorUrlMetricsRepository:
-        return MonitorUrlMetricsRepository(self.POSTGRES_POOL)
+    async def get_monitor_url_metrics_repository(self) -> MonitorUrlMetricsRepository:
+        return MonitorUrlMetricsRepository(await self.POSTGRES_POOL)
 
 
-async def configure() -> Config:
+def configure() -> Config:
     """
     Parse the ENV and prepare a `Config` instance according to that.
     """
@@ -77,7 +85,6 @@ async def configure() -> Config:
         "port": parsed.port,
         "database": parsed.path.lstrip("/"),  # type: ignore
     }
-    locals()["POSTGRES_POOL"] = await asyncpg.create_pool(**locals()["POSTGRES_CONNECTION_ARGS"])
 
     # Take all local variables to the `Config` constructor, if they start uppercase
     c = Config(**{key: value for (key, value) in locals().items() if key.isupper()})

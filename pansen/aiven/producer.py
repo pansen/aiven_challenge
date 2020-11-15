@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 async def runner(schedule: Optional[Schedule] = None):
     if not schedule:
-        c = await configure()
+        c = configure()
         schedule = Schedule(c, max_count=2)
     _producer = await schedule.config.get_kafka_producer()  # noqa F841
 
