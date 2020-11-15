@@ -1,4 +1,5 @@
 import logging
+from typing import AsyncIterable
 from uuid import UUID
 
 from asyncpg import Connection
@@ -18,6 +19,7 @@ class MonitorUrlMetricsRepository:
             raise Exception("Updating an `MonitorUrlMetrics` instance is not supported so far; id: {mum.id}")
         log.debug("Storing: %s ...", mum)
         async for t in self._transaction():
+            log.debug("Using transaction: %s to INSERT ...", t)
             # Insert a record into the created table.
             inserted = await t.fetch(
                 f"""
@@ -45,7 +47,7 @@ class MonitorUrlMetricsRepository:
             return new_row_id
         raise Exception("Invalid")
 
-    async def _transaction(self) -> Connection:
+    async def _transaction(self) -> AsyncIterable[Connection]:
         """
         Transaction providing coroutine, since this is `async` and we cannot `yield from` in an
         async function.
@@ -55,8 +57,19 @@ class MonitorUrlMetricsRepository:
         """
         # https://magicstack.github.io/asyncpg/current/usage.html#connection-pools
         connection = await self.pool.acquire()
-        async with connection.transaction():
+
+        tx = connection.transaction()
+        await tx.start()
+        try:
+            log.debug("Transaction start: %s ...", tx)
             yield connection
+        except Exception as e:
+            log.error("Transaction rollback: %s: %s", tx, e, exc_info=e)
+            await tx.rollback()
+            raise e
+        finally:
+            log.debug("Transaction commit: %s", tx)
+            await tx.commit()
 
 
 MONITOR_URL_METRICS_TABLE = "monitor_url_metrics"
