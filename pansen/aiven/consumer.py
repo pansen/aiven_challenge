@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 import faust
@@ -30,18 +31,23 @@ async def url_metrics_agent(stream):
     repository: MonitorUrlMetricsRepository = c.get_monitor_url_metrics_repository()
 
     async for value in stream:  # type: bytes
-        mum = MonitorUrlMetrics.from_json(value)
+        # TODO andi: during testing, this is not properly marshalled
+        if isinstance(value, MonitorUrlMetrics):
+            mum = value
+        elif isinstance(value, dict):
+            log.debug("Loading from bytes: %s", value)
+            mum = MonitorUrlMetrics.from_json(value)
+        else:
+            log.debug("Loading from bytes: %s", value)
+            mum = MonitorUrlMetrics.from_str(value)
         log.info("Processing %s ...", value)
         new_id = await repository.save(mum)
         mum.id = new_id
         yield mum
 
 
-def run():
-    """
-    Entry-point to have the ability to perform some application start logic.
-    """
-    config: Config = configure()
+async def runner():
+    config: Config = await configure()
     consumer_faust_app.conf.custom_config = config
 
     # TODO andi: any useful?
@@ -51,3 +57,15 @@ def run():
     # consumer_faust_app.conf.broker_producer = yarl.URL(config.KAFKA_SERVER)
 
     return consumer_faust_app.main()
+
+
+def run():
+    """
+    Entry-point to have the ability to perform some application start logic.
+    """
+    # https://github.com/erdewit/nest_asyncio
+    import nest_asyncio
+
+    nest_asyncio.apply()
+
+    asyncio.run(runner())

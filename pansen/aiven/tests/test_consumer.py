@@ -36,7 +36,7 @@ async def test_url_metrics_agent(faust_app, pg_connection: Connection):
         _mum_copy = deepcopy(mum)
         _mum_copy.id = return_mum.id
         assert return_mum == _mum_copy
-        assert isinstance(MonitorUrlMetrics.from_json(event.value), MonitorUrlMetrics)
+        assert isinstance(MonitorUrlMetrics.from_str(event.value), MonitorUrlMetrics)
 
         rows = await pg_connection.fetch(
             f"""

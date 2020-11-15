@@ -41,6 +41,7 @@ class MonitorUrlMetricsRepository:
             )
             new_row_id = UUID(str(inserted[0][0]))
             log.debug("... stored: %s with id: %s ...", mum, new_row_id)
+            # TODO andi: `async generator ignored GeneratorExit`
             return new_row_id
         raise Exception("Invalid")
 
