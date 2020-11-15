@@ -57,7 +57,7 @@ async def configure() -> Config:
 
     # path
     for k in ("URL_CONFIG_FILE",):
-        locals()[k] = os.path.join(PANSEN_AIVEN_PROJECT_ROOT, os.getenv(k))
+        locals()[k] = os.path.join(PANSEN_AIVEN_PROJECT_ROOT, os.getenv(k))  # type: ignore
 
     # string
     for k in (
@@ -75,7 +75,7 @@ async def configure() -> Config:
         "password": parsed.password,
         "host": parsed.hostname,
         "port": parsed.port,
-        "database": parsed.path.lstrip("/"),
+        "database": parsed.path.lstrip("/"),  # type: ignore
     }
     locals()["POSTGRES_POOL"] = await asyncpg.create_pool(**locals()["POSTGRES_CONNECTION_ARGS"])
 

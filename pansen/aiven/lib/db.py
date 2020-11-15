@@ -42,6 +42,7 @@ class MonitorUrlMetricsRepository:
             new_row_id = UUID(str(inserted[0][0]))
             log.debug("... stored: %s with id: %s ...", mum, new_row_id)
             return new_row_id
+        raise Exception("Invalid")
 
     async def _transaction(self) -> Connection:
         """

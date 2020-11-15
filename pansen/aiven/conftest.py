@@ -3,6 +3,7 @@ import inspect
 import logging
 import os
 from asyncio.selector_events import BaseSelectorEventLoop
+from typing import AsyncGenerator
 from unittest import mock
 
 import asyncpg
@@ -77,7 +78,7 @@ async def config(_config: Config, monitor_metrics_repository: MonitorUrlMetricsR
 
 
 @pytest.fixture()
-async def faust_app(config: Config) -> App:
+async def faust_app(config: Config) -> AsyncGenerator[App, None]:
     """
     Fixture for our Faust app, only bound to memory.
 

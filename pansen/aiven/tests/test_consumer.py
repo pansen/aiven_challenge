@@ -2,8 +2,7 @@ import logging
 from copy import deepcopy
 
 import pytest
-from aiohttp.connector import Connection
-from asyncpg import Record
+from asyncpg import Connection, Record
 
 from pansen.aiven.consumer import url_metrics_agent
 from pansen.aiven.lib.db import MONITOR_URL_METRICS_TABLE

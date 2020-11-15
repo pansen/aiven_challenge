@@ -1,4 +1,5 @@
 import logging
+from typing import AsyncGenerator
 
 import pytest
 from aiokafka import AIOKafkaProducer
@@ -40,7 +41,7 @@ async def test_kafka_consumer_faust(
 
 
 @pytest.fixture()
-async def faust_app(config: Config) -> App:
+async def faust_app(config: Config) -> AsyncGenerator[App, None]:
     """
     Fixture for our Faust app.
 
