@@ -20,20 +20,24 @@ async def runner(schedule: Optional[Schedule] = None, max_count=2):
 
     try:
         async for jobs in batch_fetch(schedule):
-            sends = []
+            batch = _producer.create_batch()
             for response in jobs:
                 mu_metric = MonitorUrlMetrics.from_respose(response)
                 log.debug("Sending to Kafka: %s ...", mu_metric)
-                sends.append(_producer.send(schedule.config.KAFKA_TOPIC, mu_metric))
-            await asyncio.gather(*sends)
+                metadata = batch.append(value=mu_metric.to_wire(), key=None, timestamp=None)
+                if metadata is None:
+                    raise Exception(f"Found no metadata to add: {mu_metric.to_wire()}")
+            _fut = await _producer.send_batch(batch, schedule.config.KAFKA_TOPIC, partition=None)
+            _record = await _fut  # noqa F841
     finally:
         await _producer.stop()
 
 
 @click.command()
-@click.help_option('-h', '--help')
-@click.option('-c', '--count', default=2, required=False, show_default=True,
-              help="How many iterations to run the schedule.")
+@click.help_option("-h", "--help")
+@click.option(
+    "-c", "--count", default=2, required=False, show_default=True, help="How many iterations to run the schedule."
+)
 def run(count):
     """
     Entry-point to have the ability to perform some application start logic.

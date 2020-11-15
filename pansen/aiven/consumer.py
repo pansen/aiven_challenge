@@ -29,19 +29,20 @@ async def url_metrics_agent(stream):
     c: Config = consumer_faust_app.conf.custom_config
     repository: MonitorUrlMetricsRepository = await c.get_monitor_url_metrics_repository()
 
-    async for value in stream:  # type: bytes
-        # TODO andi: during testing, this is not properly marshalled
-        if isinstance(value, MonitorUrlMetrics):
-            mum = value
-        elif isinstance(value, dict):
-            log.debug("Loading from bytes: %s", value)
-            mum = MonitorUrlMetrics.from_json(value)
-        else:
-            raise NotImplementedError(f"Type {value!r} cannot be processed.")
-        log.info("Processing %s ...", value)
-        new_id = await repository.save(mum)
-        mum.id = new_id
-        yield mum
+    async for batch in stream.take(5, within=1):
+        for value in batch:  # type: bytes
+            # TODO andi: during testing, this is not properly marshalled
+            if isinstance(value, MonitorUrlMetrics):
+                mum = value
+            elif isinstance(value, dict):
+                log.debug("Loading from dict: %s", value)
+                mum = MonitorUrlMetrics.from_json(value)
+            else:
+                raise NotImplementedError(f"Type {value!r} cannot be processed.")
+            log.info("Processing %s ...", value)
+            new_id = await repository.save(mum)
+            mum.id = new_id
+            yield mum
 
 
 def run():
