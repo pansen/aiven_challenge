@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 import faust
@@ -28,7 +27,7 @@ async def url_metrics_agent(stream):
     `MonitorUrlMetrics` agent.
     """
     c: Config = consumer_faust_app.conf.custom_config
-    repository: MonitorUrlMetricsRepository = c.get_monitor_url_metrics_repository()
+    repository: MonitorUrlMetricsRepository = await c.get_monitor_url_metrics_repository()
 
     async for value in stream:  # type: bytes
         # TODO andi: during testing, this is not properly marshalled
@@ -38,16 +37,18 @@ async def url_metrics_agent(stream):
             log.debug("Loading from bytes: %s", value)
             mum = MonitorUrlMetrics.from_json(value)
         else:
-            log.debug("Loading from bytes: %s", value)
-            mum = MonitorUrlMetrics.from_str(value)
+            raise NotImplementedError(f"Type {value!r} cannot be processed.")
         log.info("Processing %s ...", value)
         new_id = await repository.save(mum)
         mum.id = new_id
         yield mum
 
 
-async def runner():
-    config: Config = await configure()
+def run():
+    """
+    Entry-point to have the ability to perform some application start logic.
+    """
+    config: Config = configure()
     consumer_faust_app.conf.custom_config = config
 
     # TODO andi: any useful?
@@ -57,15 +58,3 @@ async def runner():
     # consumer_faust_app.conf.broker_producer = yarl.URL(config.KAFKA_SERVER)
 
     return consumer_faust_app.main()
-
-
-def run():
-    """
-    Entry-point to have the ability to perform some application start logic.
-    """
-    # https://github.com/erdewit/nest_asyncio
-    import nest_asyncio
-
-    nest_asyncio.apply()
-
-    asyncio.run(runner())
