@@ -101,11 +101,14 @@ async def monitor_metrics_repository(_config: Config, pg_connection: Connection)
     of our testsuite.
     """
 
-    async def _pg_connection():
-        yield pg_connection
+    async def _pg_connection(*args, **kwargs):
+        return pg_connection
 
     mmr = MonitorUrlMetricsRepository(await _config.POSTGRES_POOL)
-    with mock.patch.object(mmr, "_transaction", side_effect=_pg_connection) as _transaction:  # noqa F841
+    with mock.patch(
+        "pansen.aiven.lib.db.connection_with_transaction",
+    ) as _cwt_mock:  # noqa F841
+        _cwt_mock.return_value.__aenter__ = _pg_connection
         yield mmr
 
 
