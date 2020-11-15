@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import Optional
+from uuid import UUID
 
 import faust
 from httpx import Response
@@ -8,6 +10,7 @@ from pansen.aiven.lib import UjsonSchema
 
 
 class MonitorUrlMetrics(faust.Record):
+    id: Optional[UUID]
     duration: int
     status_code: int
     url: str
@@ -46,6 +49,7 @@ class MonitorUrlMetricsSchema(UjsonSchema):
     Schema to validate and create a `MonitorUrlMetrics`
     """
 
+    id = fields.UUID(required=False, allow_none=True)
     duration = fields.Int(required=True, allow_none=False)
     status_code = fields.Int(required=False, default=-1)
     url = fields.String(required=True, allow_none=False)

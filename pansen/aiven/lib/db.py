@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 
 from asyncpg import Connection
@@ -5,12 +6,17 @@ from asyncpg.pool import Pool
 
 from pansen.aiven.lib.transport import MonitorUrlMetrics
 
+log = logging.getLogger(__name__)
+
 
 class MonitorUrlMetricsRepository:
     def __init__(self, pool: Pool):
         self.pool = pool
 
     async def save(self, mum: MonitorUrlMetrics) -> UUID:
+        if mum.id is not None:
+            raise Exception("Updating an `MonitorUrlMetrics` instance is not supported so far; id: {mum.id}")
+        log.debug("Storing: %s ...", mum)
         async for t in self._transaction():
             # Insert a record into the created table.
             inserted = await t.fetch(
@@ -34,6 +40,7 @@ class MonitorUrlMetricsRepository:
                 mum.issued_at,
             )
             new_row_id = UUID(str(inserted[0][0]))
+            log.debug("... stored: %s with id: %s ...", mum, new_row_id)
             return new_row_id
 
     async def _transaction(self) -> Connection:

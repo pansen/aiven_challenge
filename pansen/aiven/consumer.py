@@ -4,6 +4,7 @@ import faust
 import yarl
 
 from pansen.aiven.config import Config, configure
+from pansen.aiven.lib.db import MonitorUrlMetricsRepository
 from pansen.aiven.lib.transport import MonitorUrlMetrics
 
 log = logging.getLogger(__name__)
@@ -26,9 +27,14 @@ async def url_metrics_agent(stream):
     """
     `MonitorUrlMetrics` agent.
     """
+    c: Config = consumer_faust_app.conf.custom_config
+    repository: MonitorUrlMetricsRepository = c.get_monitor_url_metrics_repository()
+
     async for value in stream:  # type: bytes
         mum = MonitorUrlMetrics.from_json(value)
         log.info("Processing %s ...", value)
+        new_id = await repository.save(mum)
+        mum.id = new_id
         yield mum
 
 

@@ -13,6 +13,7 @@ def test_transport_schema():
     serialized = schema.dump(mm)
     keys_to_have = sorted(
         [
+            "id",
             "url",
             "issued_at",
             "status_code",
