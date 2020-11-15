@@ -18,7 +18,7 @@ jobs:
       - name: Purge Docker container volumes
         run: docker-compose down -v
 
-      - name: Start Docker containers for Zookeeper, Kafka
+      - name: Start Docker containers for Zookeeper, Kafka, Postgres
         run: docker-compose up -d
 
       # We don't do a full `make clean` here, not to degrade the performance

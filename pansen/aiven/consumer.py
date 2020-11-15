@@ -49,5 +49,5 @@ def run():
     # consumer_faust_app.conf.broker = yarl.URL(config.KAFKA_SERVER)
     # consumer_faust_app.conf.broker_consumer = yarl.URL(config.KAFKA_SERVER)
     # consumer_faust_app.conf.broker_producer = yarl.URL(config.KAFKA_SERVER)
-    
+
     return consumer_faust_app.main()
