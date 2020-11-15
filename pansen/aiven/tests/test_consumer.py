@@ -18,32 +18,31 @@ async def test_url_metrics_agent(faust_app, pg_connection: Connection):
     See: https://faust.readthedocs.io/en/latest/userguide/testing.html#testing-with-pytest
     """
 
-    rows = await pg_connection.fetch(
-        f"""
+    len_before = len(
+        await pg_connection.fetch(
+            f"""
     SELECT * FROM {MONITOR_URL_METRICS_TABLE}
     """
+        )
     )
-    len_before = len(rows)
 
     async with url_metrics_agent.test_context() as agent:
         mum = MonitorUrlMetrics.from_respose(_build_response())
-
-        # We act with the `faust` agent, which is not aware of the auto-conversion that our
-        # Kafka producer has. Thus we manually need to call `to_wire` here.
         event = await agent.put(mum)
-
         return_mum = agent.results[event.message.offset]
+
         _mum_copy = deepcopy(mum)
         _mum_copy.id = return_mum.id
         assert return_mum == _mum_copy
         assert isinstance(event.value, MonitorUrlMetrics)
 
-        rows = await pg_connection.fetch(
-            f"""
+        assert len_before + 1 == len(
+            await pg_connection.fetch(
+                f"""
         SELECT * FROM {MONITOR_URL_METRICS_TABLE}
         """
+            )
         )
-        assert len_before + 1 == len(rows)
 
         row = await pg_connection.fetchrow(
             f"""
@@ -53,3 +52,5 @@ async def test_url_metrics_agent(faust_app, pg_connection: Connection):
         )
         assert row is not None
         assert isinstance(row, Record)
+
+        assert isinstance(MonitorUrlMetrics.from_json(dict(row)), MonitorUrlMetrics)

@@ -4,7 +4,7 @@ from uuid import UUID
 
 import faust
 from httpx import Response
-from marshmallow import fields, post_load
+from marshmallow import fields, post_load, pre_load
 
 from pansen.aiven.lib import UjsonSchema
 
@@ -56,6 +56,16 @@ class MonitorUrlMetricsSchema(UjsonSchema):
     method = fields.String(required=True, allow_none=False)
     num_bytes_downloaded = fields.Int(required=False, default=-1)
     issued_at = fields.DateTime(required=False, default=datetime.fromtimestamp(0))
+
+    @pre_load
+    def _pre_load(self, data: dict, **kwargs):
+        isuat = data.get("issued_at", None)
+        # If we use `MonitorUrlMetrics.from_json(dict(row))` with a DB `Record`, there is already
+        # a `datetime` instance in place. This is a cheesy solution, to covert this back and
+        # convert it forward later on.
+        if isinstance(isuat, datetime):
+            data["issued_at"] = isuat.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+        return data
 
     @post_load
     def make_object(self, data, **kwargs) -> MonitorUrlMetrics:

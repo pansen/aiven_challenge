@@ -24,3 +24,5 @@ async def test_transport_monitor_url_metrics_save(
     )
     assert row is not None
     assert isinstance(row, Record)
+
+    assert isinstance(MonitorUrlMetrics.from_json(dict(row)), MonitorUrlMetrics)
