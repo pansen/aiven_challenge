@@ -8,6 +8,8 @@ POETRY := $(PYTHON_GLOBAL) -m poetry
 BLACK := .venv/bin/black \
 		--line-length 120 \
 		--target-version py38
+PG_CONNECTION_PARAMS := --host=localhost --port=5434 --dbname=aiven_dev
+PSQL := psql -P pager=off $(PG_CONNECTION_PARAMS)
 
 .DEFAULT_GOAL := dev.build
 
@@ -70,6 +72,10 @@ ci.test: black.check flakehell mypy
 .PHONY: dev.run
 dev.run:
 	.venv/bin/pansen_aiven
+
+.PHONY: dev.psql
+dev.psql:
+	PGPASSWORD=bar PGUSER=foo $(PSQL)
 
 
 .PHONY: clean

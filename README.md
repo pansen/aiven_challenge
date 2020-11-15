@@ -55,6 +55,14 @@ make producer
 make consumer
 ```
 
+##### Database Access
+
+To connect to `psql` locally, use
+
+```bash
+make dev.psql
+```
+
 ##### Development
 
 To build your development environment, use
