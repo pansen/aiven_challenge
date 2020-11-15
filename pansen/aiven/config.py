@@ -10,7 +10,6 @@ from aiokafka import AIOKafkaProducer
 from asyncpg import Connection
 from asyncpg.pool import Pool
 from dotenv import load_dotenv
-from ujson import dumps
 
 from pansen.aiven import PANSEN_AIVEN_PROJECT_ROOT
 from pansen.aiven.lib.db import MONITOR_URL_METRICS_TABLE, MonitorUrlMetricsRepository, connection_with_transaction
@@ -45,8 +44,6 @@ class Config:
         def _serializer(v):
             if isinstance(v, MonitorUrlMetrics):
                 return v.to_wire()
-            if isinstance(v, dict):
-                return dumps(v).encode("utf-8")
             raise NotImplementedError(f"Value-type {type(v)} is not implemented.")
 
         # https://github.com/aio-libs/aiokafka#aiokafkaproducer

@@ -8,13 +8,17 @@ from kafka import TopicPartition
 
 from pansen.aiven.config import Config
 from pansen.aiven.conftest import KAFKA_PARTITION, KAFKA_TEST_TOPIC
+from pansen.aiven.lib.tests.test_transport import _build_response
+from pansen.aiven.lib.transport import MonitorUrlMetrics
 
 log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
 async def test_kafka_producer(asyncio_kafka_producer: AIOKafkaProducer):
-    res = await asyncio_kafka_producer.send_and_wait(KAFKA_TEST_TOPIC, {"a": 1})
+    res = await asyncio_kafka_producer.send_and_wait(
+        KAFKA_TEST_TOPIC, MonitorUrlMetrics.from_respose(_build_response())
+    )
     assert isinstance(res, RecordMetadata)
 
 
@@ -29,7 +33,9 @@ async def test_kafka_consumer_partition(asyncio_kafka_consumer: AIOKafkaConsumer
 async def test_kafka_consumer_consume(
     asyncio_kafka_producer: AIOKafkaProducer, asyncio_kafka_consumer: AIOKafkaConsumer
 ):
-    _future = await asyncio_kafka_producer.send(KAFKA_TEST_TOPIC, {"a": 1}, partition=KAFKA_PARTITION)
+    _future = await asyncio_kafka_producer.send(
+        KAFKA_TEST_TOPIC, MonitorUrlMetrics.from_respose(_build_response()), partition=KAFKA_PARTITION
+    )
     resp = await _future
     assert KAFKA_PARTITION == resp.partition
     await asyncio_kafka_consumer.seek_to_committed()
