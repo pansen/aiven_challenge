@@ -6,3 +6,5 @@ schedule:
     headers:
       x-extra-header: '1'
   - url: 'http://httpbin.org/get?a=1'
+  - url: 'https://rancher.zerotired.com/'
+  - url: 'https://www.spiegel.de/'

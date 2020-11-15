@@ -39,12 +39,12 @@ dev.update:
 .PHONY: consumer
 consumer:
 	@# create a subshell, so we can `ctrl + c` and still see the counts
-	(.venv/bin/consumer_pansen_aiven worker -l info); \
+	(.venv/bin/consumer_pansen_aiven worker -l info --without-web); \
 		make dev.count
 
 .PHONY: producer
 producer:
-	.venv/bin/producer_pansen_aiven --count=3
+	.venv/bin/producer_pansen_aiven --count=100
 	@make dev.count
 
 .PHONY: dev.count

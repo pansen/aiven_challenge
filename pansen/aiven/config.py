@@ -145,6 +145,11 @@ def log_config():
                 "propagate": False,
                 "handlers": ["console"],
             },
+            "aiokafka.conn": {
+                "level": "INFO",
+                "propagate": False,
+                "handlers": ["console"],
+            },
         },
         "root": {
             "level": "DEBUG",
