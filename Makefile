@@ -38,11 +38,18 @@ dev.update:
 
 .PHONY: consumer
 consumer:
-	.venv/bin/consumer_pansen_aiven worker -l info
+	@# create a subshell, so we can `ctrl + c` and still see the counts
+	(.venv/bin/consumer_pansen_aiven worker -l info); \
+		make dev.count
 
 .PHONY: producer
 producer:
 	.venv/bin/producer_pansen_aiven
+	@make dev.count
+
+.PHONY: dev.count
+dev.count:
+	echo 'select count(*) from monitor_url_metrics;' | make dev.psql
 
 .PHONY: black
 black:
