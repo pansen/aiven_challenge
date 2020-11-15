@@ -7,12 +7,13 @@ from urllib import parse
 
 import asyncpg
 from aiokafka import AIOKafkaProducer
+from asyncpg import Connection
 from asyncpg.pool import Pool
 from dotenv import load_dotenv
 from ujson import dumps
 
 from pansen.aiven import PANSEN_AIVEN_PROJECT_ROOT
-from pansen.aiven.lib.db import MonitorUrlMetricsRepository
+from pansen.aiven.lib.db import MONITOR_URL_METRICS_TABLE, MonitorUrlMetricsRepository, connection_with_transaction
 from pansen.aiven.lib.transport import MonitorUrlMetrics
 
 
@@ -30,6 +31,14 @@ class Config:
         if self._POSTGRES_POOL:
             return self._POSTGRES_POOL
         self._POSTGRES_POOL = await asyncpg.create_pool(**self.POSTGRES_CONNECTION_ARGS)
+
+        # TODO andi: not something I would do automatically, there are tools like 'Alembic' and
+        #  this should be triggered explicitly. Yet for the sake of this exercise it's fine
+        #  to call it automatically (also because there is no harm).
+        async with self._POSTGRES_POOL.acquire() as _connection:
+            async with connection_with_transaction(_connection) as conn:
+                await self.create_tables(conn)
+
         return self._POSTGRES_POOL
 
     async def get_kafka_producer(self, event_loop=None) -> AIOKafkaProducer:
@@ -53,6 +62,34 @@ class Config:
 
     async def get_monitor_url_metrics_repository(self) -> MonitorUrlMetricsRepository:
         return MonitorUrlMetricsRepository(await self.POSTGRES_POOL)
+
+    async def create_tables(self, pg_connection: Connection):
+        import logging
+
+        log = logging.getLogger(__name__)
+        log.info("Create extension `uuid-ossp` ...")
+        await pg_connection.execute(
+            """
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+        """
+        )
+
+        log.info("Create table `%s` ...", MONITOR_URL_METRICS_TABLE)
+        await pg_connection.execute(
+            f"""
+        CREATE TABLE IF NOT EXISTS {MONITOR_URL_METRICS_TABLE} (
+        id UUID NOT NULL DEFAULT uuid_generate_v1() ,
+        duration integer,
+        status_code integer,
+        -- https://stackoverflow.com/a/417184
+        url varchar(2083),
+        method varchar(40),
+        num_bytes_downloaded integer,
+        issued_at  timestamptz,
+        CONSTRAINT idx_{MONITOR_URL_METRICS_TABLE}_id PRIMARY KEY ( id )
+        )
+        """
+        )
 
 
 def configure() -> Config:

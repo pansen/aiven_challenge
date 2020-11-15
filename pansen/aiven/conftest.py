@@ -15,7 +15,7 @@ from vcr import VCR
 
 from pansen.aiven.config import Config, configure
 from pansen.aiven.consumer import consumer_faust_app
-from pansen.aiven.lib.db import MONITOR_URL_METRICS_TABLE, MonitorUrlMetricsRepository
+from pansen.aiven.lib.db import MonitorUrlMetricsRepository
 
 log = logging.getLogger(__name__)
 
@@ -120,32 +120,7 @@ async def raw_pg_connection(_config: Config) -> Connection:
 
 
 @pytest.fixture(scope="function")
-async def create_tables(raw_pg_connection: Connection):
-    await raw_pg_connection.execute(
-        """
-    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-    """
-    )
-
-    await raw_pg_connection.execute(
-        f"""
-    CREATE TABLE IF NOT EXISTS {MONITOR_URL_METRICS_TABLE} (
-    id UUID NOT NULL DEFAULT uuid_generate_v1() ,
-    duration integer,
-    status_code integer,
-    -- https://stackoverflow.com/a/417184
-    url varchar(2083),
-    method varchar(40),
-    num_bytes_downloaded integer,
-    issued_at  timestamptz,
-    CONSTRAINT idx_{MONITOR_URL_METRICS_TABLE}_id PRIMARY KEY ( id )
-    )
-    """
-    )
-
-
-@pytest.fixture(scope="function")
-async def pg_connection(raw_pg_connection, create_tables) -> Connection:
+async def pg_connection(raw_pg_connection) -> Connection:
     await raw_pg_connection.execute("""BEGIN""")
     yield raw_pg_connection
     await raw_pg_connection.execute("""ROLLBACK""")
